@@ -27,6 +27,7 @@ from db_utils import (
     update_habits_category_to_null,
     get_habits_by_category_id,
     get_habits_without_category,
+    habit_to_schema,
 )
 from ValidationUtils.validate_entries import validate_string
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -41,7 +42,7 @@ MAX_CATEGORIES = int(os.getenv("MAX_CATEGORIES"))
 
 
 @category_router.post("/add_category")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def add_category(
     request: Request,
     category: AddCategorySchema = Body(...),
@@ -88,7 +89,7 @@ async def add_category(
 
 
 @category_router.get("/get_categories")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def get_categories(
     request: Request,
     user: Users = Depends(get_user_depends),
@@ -109,7 +110,7 @@ async def get_categories(
 
 
 @category_router.put("/update_category")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def update_category(
     request: Request,
     category_data: UpdateCategorySchema = Body(...),
@@ -151,7 +152,7 @@ async def update_category(
 
 
 @category_router.post("/delete_category")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def delete_category(
     request: Request,
     category: CategoryIdProvidedSchema = Body(...),
@@ -169,7 +170,14 @@ async def delete_category(
         raise HTTPException(
             status_code=401, detail="Unauthorized. You're not owner of this category")
 
-    await update_habits_category_to_null(db=db, category_id=category.category_id)
+    habits_in_category = await get_habits_by_category_id(
+        db=db, category_id=category.category_id, user_id=user.user_id
+    )
+    if habits_in_category:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot delete category. There are {len(habits_in_category)} habit(s) in this category. Please move or delete them first."
+        )
 
     await delete_category_by_id(db=db, category_id=category.category_id)
 
@@ -177,7 +185,7 @@ async def delete_category(
 
 
 @category_router.get("/get_habits_by_category")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def get_habits_by_category(
     request: Request,
     category_id: Optional[str] = Query(None),
@@ -201,4 +209,4 @@ async def get_habits_by_category(
         
         habits = await get_habits_by_category_id(db=db, category_id=category_id, user_id=user.user_id)
 
-    return habits
+    return [HabitSchema(**habit_to_schema(habit)) for habit in habits]

@@ -8,6 +8,7 @@ from sqlalchemy import select, delete, or_, and_, update
 from functools import wraps
 from typing import Optional
 from sqlalchemy.orm import DeclarativeBase
+import datetime
 
 
 def get_session() -> AsyncSession:
@@ -251,3 +252,38 @@ async def get_habits_without_category(db: AsyncSession, user_id: str):
         .where(and_(Habits.category_id == None, Habits.user_id == user_id))
     )
     return result.scalars().all()
+
+
+def calculate_streak(habit: Habits) -> int:
+    if not habit.completions:
+        return 0
+
+    today = datetime.datetime.today().date()
+    completion_dates = set()
+
+    for completion in habit.completions:
+        completion_date = datetime.datetime.fromtimestamp(completion.completed_at).date()
+        completion_dates.add(completion_date)
+
+    streak = 0
+    current_date = today
+
+    while current_date in completion_dates:
+        streak += 1
+        current_date -= datetime.timedelta(days=1)
+
+    return streak
+
+
+def habit_to_schema(habit: Habits) -> dict:
+    streak = calculate_streak(habit)
+    return {
+        "habit_id": habit.habit_id,
+        "habit_name": habit.habit_name,
+        "habit_desc": habit.habit_desc,
+        "date_created": habit.date_created,
+        "completed": habit.completed,
+        "reset_at": habit.reset_at,
+        "category_id": habit.category_id,
+        "streak": streak,
+    }

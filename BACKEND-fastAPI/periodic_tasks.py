@@ -17,7 +17,7 @@ from db_utils import (
 async def reset_all_habits() -> None:
     db: AsyncSession = session_local()
     try:
-        habits = await get_completed_habits()
+        habits = await get_completed_habits(db=db)
         for habit in habits:
             reset_at = habit.reset_at
             for time, value in reset_at.items():

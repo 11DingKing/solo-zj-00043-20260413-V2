@@ -19,6 +19,7 @@ from db_utils import (
     delete_habit_by_id,
     construct_and_add_model_to_database,
     get_category_by_id,
+    habit_to_schema,
 )
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from ValidationUtils.validate_entries import validate_string, validate_reset_time
@@ -47,7 +48,7 @@ MAX_HABITS = int(os.getenv("MAX_HABITS"))
 
 
 @habit_router.post("/add_habit")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def add_habit(
     request: Request,
     habit: AddHabitSchema = Body(...),
@@ -104,18 +105,18 @@ async def add_habit(
 
 
 @habit_router.get("/get_habits")
-# @limiter.limit("20/minute")
+# @limiter.limit("60/minute")
 async def get_habits(
     request: Request,
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ) -> List[HabitSchema]:
     user = await get_merged_user(user=user, db=db)
-    return user.habits
+    return [HabitSchema(**habit_to_schema(habit)) for habit in user.habits]
 
 
 @habit_router.post("/habit_completion")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def habit_completion(
     request: Request,
     habit: Habits = Depends(get_habit_depends),
@@ -163,7 +164,7 @@ async def habit_completion(
 
 
 @habit_router.post("/uncomplete_habit")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def uncomplete_habit(
     request: Request,
     habit: Habits = Depends(get_habit_depends),
@@ -199,7 +200,7 @@ async def uncomplete_habit(
 
 
 @habit_router.post("/delete_habit")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def delete_habit(
     request: Request,
     habit=Depends(get_habit_depends),
@@ -219,7 +220,7 @@ async def delete_habit(
 
 
 @habit_router.post("/get_habit_completions")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def get_completions(
     request: Request,
     habit=Depends(get_habit_depends),
@@ -236,7 +237,7 @@ async def get_completions(
 
 
 @habit_router.get("/get_all_completions")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def get_all_completions(
     request: Request,
     user: Users = Depends(get_user_depends),

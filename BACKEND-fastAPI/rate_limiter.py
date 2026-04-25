@@ -1,9 +1,22 @@
-
+from fastapi import Request
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import hashlib
 
-limiter = Limiter(key_func=get_remote_address)
+
+def get_user_identifier(request: Request) -> str:
+    token = request.headers.get("token", "")
+    if token:
+        return hashlib.sha256(token.encode()).hexdigest()
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0]
+    if request.client:
+        return request.client.host
+    return "anonymous"
+
+
+limiter = Limiter(key_func=get_user_identifier)
 
 # from fastapi import Request, HTTPException, Header, Body
 # import hashlib

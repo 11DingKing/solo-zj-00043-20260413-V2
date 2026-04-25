@@ -14,6 +14,7 @@ class HabitSchema(BaseModel):
     completed: bool
     reset_at: Dict[int, bool]
     category_id: str | None = None
+    streak: int = 0
 
 
 class CategorySchema(BaseModel):

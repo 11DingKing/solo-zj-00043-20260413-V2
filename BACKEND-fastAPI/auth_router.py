@@ -36,13 +36,13 @@ auth_router = APIRouter()
 
 
 @auth_router.get("/")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def test(request: Request) -> str:
     return "Hello World: " + str(random.randint(1, 100))
 
 
 @auth_router.post("/register")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def register(
     request: Request,
     user_data: RegisterSchema = Body(...),
@@ -96,7 +96,7 @@ async def register(
 
 
 @auth_router.post("/login")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def login(
     request: Request,
     user_data: LoginSchema = Body(...),
@@ -145,7 +145,7 @@ async def login(
 
 
 @auth_router.post("/logout")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def loogut(
     request: Request,
     token_dict: TokenProvidedSchema = Body(..., example={
@@ -160,7 +160,7 @@ async def loogut(
 
 
 @auth_router.get("/get_user_profile")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def get_user_profile(
     request: Request,
     user: Users = Depends(get_user_depends),
@@ -196,7 +196,7 @@ async def get_user_profile(
 
 
 @auth_router.post("/change_username")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def change_username(
     request: Request,
     new_username: Annotated[str, Body(title="New usernaname", min_length=3, max_length=50)],
@@ -214,7 +214,7 @@ async def change_username(
 
 
 @auth_router.post("/change_password")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def change_password(
     request: Request,
     old_password: Annotated[str, Body(title="Old password", min_length=8, max_length=30)],
@@ -244,7 +244,7 @@ async def change_password(
 
 
 @auth_router.get("/check_token")
-@limiter.limit("20/minute")
+@limiter.limit("60/minute")
 async def check_token(
     request: Request,
     expires_at=Depends(check_token_expiery_depends)
