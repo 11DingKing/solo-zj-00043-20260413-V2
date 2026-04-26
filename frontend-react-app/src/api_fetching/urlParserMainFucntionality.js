@@ -170,15 +170,12 @@ export const fetchUpdateCategory = async (categoryId, categoryName, token) => {
 };
 
 export const fetchDeleteCategory = async (categoryId, token) => {
-    const response = await fetch(deleteCategoryURL, {
-        method: "POST",
+    const url = `${deleteCategoryURL}?category_id=${encodeURIComponent(categoryId)}`;
+    const response = await fetch(url, {
+        method: "DELETE",
         headers: {
-            "Content-Type": "application/json",
             "token": "Bearer " + token
-        },
-        body: JSON.stringify({
-            "category_id": categoryId
-        })
+        }
     });
     return response;
 };

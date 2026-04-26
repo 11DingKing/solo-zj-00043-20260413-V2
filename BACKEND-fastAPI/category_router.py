@@ -151,17 +151,17 @@ async def update_category(
     )
 
 
-@category_router.post("/delete_category")
+@category_router.delete("/delete_category")
 @limiter.limit("60/minute")
 async def delete_category(
     request: Request,
-    category: CategoryIdProvidedSchema = Body(...),
+    category_id: str = Query(..., description="Category ID to delete"),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
     user = await get_merged_user(user=user, db=db)
 
-    category_to_delete = await get_category_by_id(db=db, category_id=category.category_id)
+    category_to_delete = await get_category_by_id(db=db, category_id=category_id)
     if not category_to_delete:
         raise HTTPException(
             status_code=400, detail="Category not found")
@@ -171,7 +171,7 @@ async def delete_category(
             status_code=401, detail="Unauthorized. You're not owner of this category")
 
     habits_in_category = await get_habits_by_category_id(
-        db=db, category_id=category.category_id, user_id=user.user_id
+        db=db, category_id=category_id, user_id=user.user_id
     )
     if habits_in_category:
         raise HTTPException(
@@ -179,7 +179,7 @@ async def delete_category(
             detail=f"Cannot delete category. There are {len(habits_in_category)} habit(s) in this category. Please move or delete them first."
         )
 
-    await delete_category_by_id(db=db, category_id=category.category_id)
+    await delete_category_by_id(db=db, category_id=category_id)
 
     await commit(db)
 

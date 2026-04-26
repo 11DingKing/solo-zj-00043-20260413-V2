@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import MainPage from './components/mainPage.jsx'
 import Login from './components/authrorization/login.jsx'
 import Register from './components/authrorization/register.jsx';
-import { BrowserRouter, Routes, Route } from 'react-router' 
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router' 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 import { Habits } from './components/habitsPage.jsx';
 import UserProfile from './components/userProfile.jsx';
@@ -22,8 +22,11 @@ function Main() {
                 <Route path='/register' element={<ThemeWrapper><Register /></ThemeWrapper>} />
                 <Route path='/internal-server-error' element={<ThemeWrapper><InternalServerError /></ThemeWrapper>} />
                 <Route path='/user-profile' element={<ThemeWrapper><UserProfile /></ThemeWrapper>} />
+                <Route path='/profile' element={<Navigate to='/user-profile' replace />} />
                 <Route path='/to-many-requests' element={<ThemeWrapper><div>Too many requests. PLEASE STOP!</div></ThemeWrapper>} />
                 <Route path='/habit_completions/:id' element={<ThemeWrapper><HabitCompletions /></ThemeWrapper>} />
+                <Route path='/completions' element={<Navigate to='/habit_completions/1' replace />} />
+                <Route path='/completions/:id' element={<Navigate to='/habit_completions/:id' replace />} />
 
                 <Route path='*' element={<ThemeWrapper><NotFound /></ThemeWrapper>}/>
             </Routes> 
