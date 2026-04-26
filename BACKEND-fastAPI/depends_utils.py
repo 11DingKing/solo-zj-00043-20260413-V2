@@ -89,10 +89,10 @@ async def get_habit_depends(habit_id: HabitIdProvidedSchema = Body(...)):
         await db.close()
 
 
-async def check_token_expiery_depends(token: TokenProvidedSchema = Header(...)) -> str:
+async def check_token_expiery_depends(token: str = Header(...)) -> str:
     try:
         db: Session = session_local()
-        token = prepare_authorization_token(token=token.token)
+        token = prepare_authorization_token(token=token)
         await authorize_token(token=token, db=db)
 
         payload = extract_payload(token=token)
