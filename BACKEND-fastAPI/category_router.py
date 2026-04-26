@@ -51,7 +51,8 @@ async def add_category(
 ) -> CategorySchema:
     user = await get_merged_user(user=user, db=db)
 
-    if len(user.categories) + 1 > MAX_CATEGORIES:
+    existing_categories = await get_categories_by_user_id(db=db, user_id=user.user_id)
+    if len(existing_categories) + 1 > MAX_CATEGORIES:
         raise HTTPException(
             status_code=400, detail=f"You can't add more categories. Each user can have up to {MAX_CATEGORIES} categories.")
 
